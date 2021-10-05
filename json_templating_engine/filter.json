@@ -1,0 +1,17 @@
+{
+    "filters": [
+        {
+            "runWith": "java",
+            "script": "json-tmpl.jar",
+            "arguments": [
+                "compile",
+                "--remove-src",
+                "--out",
+                "./",
+                "BP",
+                "RP"
+            ],
+            "name": "Templating JSON template files"
+        }
+    ]
+}
