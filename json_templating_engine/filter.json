@@ -6,6 +6,8 @@
             "arguments": [
                 "compile",
                 "--remove-src",
+                "--scope",
+                "data/json_templating_engine",
                 "--out",
                 "./",
                 "BP",
