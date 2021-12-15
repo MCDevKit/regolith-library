@@ -8,7 +8,6 @@ Add this to your regolith filters
 
 ```json
 {
-    "url": "github.com/MCDevKit/regolith-library",
-    "filter": "json_templating_engine"
+    "url": "github.com/MCDevKit/regolith-library/json_templating_engine"
 }
 ```
