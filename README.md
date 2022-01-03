@@ -11,3 +11,13 @@ Add this to your regolith filters
     "url": "github.com/MCDevKit/regolith-library/json_templating_engine"
 }
 ```
+
+## CommandLang
+
+Add this to your regolith filters
+
+```json
+{
+    "url": "github.com/MCDevKit/regolith-library/command_lang"
+}
+```

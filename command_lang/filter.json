@@ -1,0 +1,19 @@
+{
+    "filters": [
+        {
+            "runWith": "shell",
+            "script": "cmcc",
+            "arguments": [
+                "regolith",
+                "--bp-dir",
+                "./BP",
+                "--data-dir",
+                "./data/json_templating_engine",
+                "--source-dir",
+                "./data/command_lang",
+                "--no-ansi"
+            ],
+            "name": "Compiling CommandLang files"
+        }
+    ]
+}
