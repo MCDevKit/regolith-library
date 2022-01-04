@@ -2,7 +2,7 @@
     "filters": [
         {
             "runWith": "shell",
-            "script": "cmcc",
+            "command": "cmcc",
             "arguments": [
                 "regolith",
                 "--bp-dir",
