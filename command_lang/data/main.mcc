@@ -1,3 +1,8 @@
-{
-    // Here add your global data
+
+public func start() {
+
+}
+
+public func update() {
+
 }
