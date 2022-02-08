@@ -1,4 +1,4 @@
-# MCDevKit Regolith Filters
+# [MCDevKit](https://mcdevkit.com) Regolith Filters
 
 This repository contains MCDevKit filters for [regolith](https://github.com/Bedrock-OSS/regolith).
 
