@@ -4,20 +4,32 @@ This repository contains MCDevKit filters for [regolith](https://github.com/Bedr
 
 ## JSON Templating Engine
 
-Add this to your regolith filters
+Execute this command
+
+```sh
+regolith install github.com/MCDevKit/regolith-library/json_templating_engine
+```
+
+And add this to the profile filters
 
 ```json
 {
-    "url": "github.com/MCDevKit/regolith-library/json_templating_engine"
+    "filter": "json_templating_engine"
 }
 ```
 
 ## CommandLang
 
-Add this to your regolith filters
+Execute this command
+
+```sh
+regolith install github.com/MCDevKit/regolith-library/command_lang
+```
+
+And add this to the profile filters
 
 ```json
 {
-    "url": "github.com/MCDevKit/regolith-library/command_lang"
+    "filter": "command_lang"
 }
 ```
