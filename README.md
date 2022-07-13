@@ -6,7 +6,7 @@ This repository contains MCDevKit filters for [regolith](https://github.com/Bedr
 
 Execute this command
 
-```sh
+```shell
 regolith install github.com/MCDevKit/regolith-library/json_templating_engine
 ```
 
@@ -22,7 +22,7 @@ And add this to the profile filters
 
 Execute this command
 
-```sh
+```shell
 regolith install github.com/MCDevKit/regolith-library/command_lang
 ```
 
