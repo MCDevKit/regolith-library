@@ -1,0 +1,19 @@
+{
+    "filters": [
+        {
+            "runWith": "exe",
+            "exe": "jsonte.exe",
+            "arguments": [
+                "compile",
+                "--remove-src",
+                "--scope",
+                "data/jsonte",
+                "--scope",
+                "data/json_templating_engine",
+                "BP",
+                "RP"
+            ],
+            "name": "Templating JSON template files"
+        }
+    ]
+}
