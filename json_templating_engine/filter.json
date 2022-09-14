@@ -1,4 +1,5 @@
 {
+    "description": "Compiles JSON templates into JSON files. Especially useful for making reusable pieces of content or large amounts of JSON files.",
     "filters": [
         {
             "runWith": "java",

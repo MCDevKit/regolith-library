@@ -1,4 +1,5 @@
 {
+    "description": "Compiles the CommandLang programming language into .mcfunction files.",
     "filters": [
         {
             "runWith": "shell",
