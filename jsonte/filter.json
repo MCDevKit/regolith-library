@@ -12,6 +12,8 @@
                 "data/jsonte",
                 "--scope",
                 "data/json_templating_engine",
+                "--cache-dir",
+                "data/jsonte/cache",
                 "BP",
                 "RP"
             ],
