@@ -3,6 +3,8 @@
         {
             "runWith": "exe",
             "exe": "jsonte.exe",
+            "exeMac": "jsonte-mac",
+            "exeLinux": "jsonte-linux",
             "arguments": [
                 "compile",
                 "--remove-src",
