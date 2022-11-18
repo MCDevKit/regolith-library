@@ -3,8 +3,6 @@
         {
             "runWith": "exe",
             "exe": "jsonte.exe",
-            "exeMac": "jsonte-mac",
-            "exeLinux": "jsonte-linux",
             "arguments": [
                 "compile",
                 "--remove-src",
@@ -17,6 +15,43 @@
                 "BP",
                 "RP"
             ],
+            "when": "os == 'windows'",
+            "name": "Templating JSON template files"
+        },
+        {
+            "runWith": "exe",
+            "exe": "jsonte-mac",
+            "arguments": [
+                "compile",
+                "--remove-src",
+                "--scope",
+                "data/jsonte",
+                "--scope",
+                "data/json_templating_engine",
+                "--cache-dir",
+                "data/jsonte/cache",
+                "BP",
+                "RP"
+            ],
+            "when": "os == 'darwin'",
+            "name": "Templating JSON template files"
+        },
+        {
+            "runWith": "exe",
+            "exe": "jsonte-linux",
+            "arguments": [
+                "compile",
+                "--remove-src",
+                "--scope",
+                "data/jsonte",
+                "--scope",
+                "data/json_templating_engine",
+                "--cache-dir",
+                "data/jsonte/cache",
+                "BP",
+                "RP"
+            ],
+            "when": "os == 'linux'",
             "name": "Templating JSON template files"
         }
     ]
