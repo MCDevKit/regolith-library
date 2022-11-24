@@ -1,6 +1,18 @@
 {
     "filters": [
         {
+            "runWith": "shell",
+            "command": "echo \"Update Regolith to 1.0.0 or later!\"",
+            "when": "false",
+            "name": "Checking whether when field is available"
+        },
+        {
+            "runWith": "shell",
+            "command": "updateRegolithToV1OrLater_dummyCommandToFailExecution",
+            "when": "false",
+            "name": "Dummy command to stop execution"
+        },
+        {
             "runWith": "exe",
             "exe": "jsonte.exe",
             "arguments": [
