@@ -1,0 +1,10 @@
+{
+    "description": "Generates a .mcdefinition file.",
+    "filters": [
+        {
+            "runWith": "nodejs",
+            "script": "./main.js",
+            "name": "Generating .mcdefinition file"
+        }
+    ]
+}
