@@ -13,6 +13,24 @@
             "name": "Dummy command to stop execution"
         },
         {
+            "runWith": "shell",
+            "command": "jsonte",
+            "arguments": [
+                "compile",
+                "--remove-src",
+                "--scope",
+                "data/jsonte",
+                "--scope",
+                "data/json_templating_engine",
+                "--cache-dir",
+                "data/jsonte/cache",
+                "BP",
+                "RP"
+            ],
+            "when": "(semver(version) >= semver('1.0.4') || semver(version) == semver('0.0.0')) && settings?.useLocal",
+            "name": "Templating JSON template files"
+        },
+        {
             "runWith": "exe",
             "exe": "jsonte.exe",
             "arguments": [
@@ -27,7 +45,7 @@
                 "BP",
                 "RP"
             ],
-            "when": "os == 'windows'",
+            "when": "((semver(version) < semver('1.0.4') && semver(version) != semver('0.0.0')) || !settings?.useLocal) && os == 'windows'",
             "name": "Templating JSON template files"
         },
         {
@@ -45,7 +63,7 @@
                 "BP",
                 "RP"
             ],
-            "when": "os == 'darwin'",
+            "when": "((semver(version) < semver('1.0.4') && semver(version) != semver('0.0.0')) || !settings?.useLocal) && os == 'darwin'",
             "name": "Templating JSON template files"
         },
         {
@@ -63,7 +81,7 @@
                 "BP",
                 "RP"
             ],
-            "when": "os == 'linux'",
+            "when": "((semver(version) < semver('1.0.4') && semver(version) != semver('0.0.0')) || !settings?.useLocal) && os == 'linux'",
             "name": "Templating JSON template files"
         }
     ]
