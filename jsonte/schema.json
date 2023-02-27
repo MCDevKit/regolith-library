@@ -1,0 +1,12 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "jsonte",
+    "type": "object",
+    "properties": {
+        "useLocal": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to use local version of jsonte from the PATH environment variable."
+        }
+    }
+}
