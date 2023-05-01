@@ -1,0 +1,98 @@
+const exec = require('child_process').execSync;
+const crypto = require('crypto');
+const path = require('path');
+const url = require('url');
+const fs = require('fs');
+
+const GitHubPathPattern = /^\/?[^/]+\/[^/]+(\/[^/]*)?$/;
+
+function makeGitURL(repo) {
+    if (!repo) {
+        return null;
+    }
+    if (repo.match(GitHubPathPattern)) {
+        if (repo.startsWith('/')) {
+            repo = repo.substring(1);
+        }
+        if (repo.endsWith('/')) {
+            repo = repo.substring(0, repo.length - 1);
+        }
+        repo = `https://github.com/${repo}`;
+    }
+    if (repo.startsWith('http://') || repo.startsWith('https://')) {
+        let parsed = new url.URL(repo);
+        let parts = parsed.pathname.split('/');
+        if (parts.length > 4 || parts.length < 3) {
+            return null;
+        }
+        if (parts.length === 3) {
+            return [repo, null];
+        }
+        parsed.pathname = path.dirname(path.normalize(parsed.pathname));
+        return [parsed.toString(), parts[3]];
+    }
+    return null;
+}
+
+function clone(repo, dir) {
+    if (!repo) {
+        throw new Error(`Invalid repo: ${repo}`);
+    }
+    const cmd = `git clone ${repo} ${dir}`;
+    console.log(`Running: ${cmd}`);
+    exec(cmd, function(error, stdout, stderr) {
+        if (error) {
+            console.log(stdout);
+            console.log(stderr);
+            console.log(error);
+        }
+    });
+}
+
+function checkout(dir, version) {
+    const cmd = `git checkout ${version}`;
+    console.log(`Running: ${cmd}`);
+    exec(cmd, { cwd: dir }, function(error, stdout, stderr) {
+        if (error) {
+            console.log(stdout);
+            console.log(stderr);
+            console.log(error);
+        }
+    });
+}
+
+function fetch(dir, cooldown) {
+    const stat = fs.statSync(dir);
+    if (stat.mtimeMs > Date.now() - 1000 * 60 * cooldown) {
+        // If the repo was updated in the last X minutes, don't fetch
+        return;
+    }
+    fs.utimesSync(dir, Date.now(), Date.now());
+    const cmd = `git fetch`;
+    console.log(`Running: ${cmd}`);
+    exec(cmd, { cwd: dir }, function(error, stdout, stderr) {
+        if (error) {
+            console.log(stdout);
+            console.log(stderr);
+            console.log(error);
+        }
+    });
+}
+
+function hashString(str) {
+    // Create MD5 hash of the repo URL
+    const hash = crypto.createHash('md5');
+    hash.update(str);
+    return hash.digest('hex');
+}
+
+function getCachedRepoDir(repo) {
+    const hash = hashString(repo);
+    return `./data/whisk/cache/${hash}`;
+}
+
+exports.makeGitURL = makeGitURL;
+exports.clone = clone;
+exports.checkout = checkout;
+exports.getCachedRepoDir = getCachedRepoDir;
+exports.fetch = fetch;

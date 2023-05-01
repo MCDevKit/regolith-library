@@ -1,0 +1,11 @@
+{
+    "description": "Copies contents of a GitHub repo into current addon.",
+    "exportData": true,
+    "filters": [
+        {
+            "runWith": "nodejs",
+            "script": "./main.js",
+            "name": "Whisking up modules..."
+        }
+    ]
+}

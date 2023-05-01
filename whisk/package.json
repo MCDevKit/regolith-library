@@ -1,0 +1,14 @@
+{
+  "name": "whisk",
+  "description": "Regolith filter for copying remote git repos into current addon",
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/MCDevKit/regolith-library.git",
+    "type": "git"
+  },
+  "version": "1.0.0",
+  "main": "./main.js",
+  "dependencies": {
+    "glob": "^7.1.7"
+  }
+}

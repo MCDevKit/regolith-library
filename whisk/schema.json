@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "whisk",
+    "type": "object",
+    "required": [
+        "modules"
+    ],
+    "properties": {
+        "modules": {
+            "type": "array",
+            "description": "An array of modules to include.",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The URL of the git repo to include. For GitHub repos, the URL can be in `user/repo` format. After the URL, directory can be specified to include only a specific directory from the repo. For example, `user/repo/dir` will include only the `dir` directory from the `user/repo` repo. If the directory is not specified, the entire repo will be included."
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "The version of the module to include. If not specified, `HEAD` will be used."
+                    }
+                }
+            }
+        },
+        "debug": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to include debug information in the output."
+        },
+        "fetchDelay": {
+            "type": "number",
+            "default": 5,
+            "description": "The delay in minutes between fetches of the git repos. Can be set to 0 to disable delay."
+        }
+    }
+}
