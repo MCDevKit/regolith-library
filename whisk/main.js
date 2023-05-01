@@ -13,7 +13,7 @@ try {
 
     // Ensure that the data directory exists
     if (!fs.existsSync(path.join(process.env.ROOT_DIR, `.whisk/cache`))) {
-        fs.mkdirSync(path.join(process.env.ROOT_DIR, `.whisk/cache`));
+        fs.mkdirSync(path.join(process.env.ROOT_DIR, `.whisk/cache`), { recursive: true });
         fs.writeFileSync(path.join(process.env.ROOT_DIR, `.whisk/cache/.gitignore`), "cache");
     }
 
