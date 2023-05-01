@@ -40,25 +40,24 @@ function clone(repo, dir) {
     }
     const cmd = `git clone ${repo} ${dir}`;
     console.log(`Running: ${cmd}`);
-    exec(cmd, function(error, stdout, stderr) {
-        if (error) {
-            console.log(stdout);
-            console.log(stderr);
-            console.log(error);
-        }
-    });
+    try {
+        exec(cmd);
+    } catch (e) {
+        console.log(e);
+        throw new Error(`Failed to clone ${repo}`);
+    }
+
 }
 
 function checkout(dir, version) {
     const cmd = `git checkout ${version}`;
     console.log(`Running: ${cmd}`);
-    exec(cmd, { cwd: dir }, function(error, stdout, stderr) {
-        if (error) {
-            console.log(stdout);
-            console.log(stderr);
-            console.log(error);
-        }
-    });
+    try {
+        exec(cmd, { cwd: dir });
+    } catch (e) {
+        console.log(e);
+        throw new Error(`Failed to checkout ${version}`);
+    }
 }
 
 function fetch(dir, cooldown) {
@@ -70,13 +69,12 @@ function fetch(dir, cooldown) {
     fs.utimesSync(dir, Date.now(), Date.now());
     const cmd = `git fetch`;
     console.log(`Running: ${cmd}`);
-    exec(cmd, { cwd: dir }, function(error, stdout, stderr) {
-        if (error) {
-            console.log(stdout);
-            console.log(stderr);
-            console.log(error);
-        }
-    });
+    try {
+        exec(cmd, { cwd: dir });
+    } catch (e) {
+        console.log(e);
+        throw new Error(`Failed to checkout ${version}`);
+    }
 }
 
 function hashString(str) {
