@@ -86,7 +86,7 @@ function hashString(str) {
 
 function getCachedRepoDir(repo) {
     const hash = hashString(repo);
-    return `./data/whisk/cache/${hash}`;
+    return path.join(process.env.ROOT_DIR, `.whisk/cache/${hash}`);
 }
 
 exports.makeGitURL = makeGitURL;

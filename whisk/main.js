@@ -12,13 +12,9 @@ settings.debug = settings.debug | process.env.DEBUG;
 try {
 
     // Ensure that the data directory exists
-    if (!fs.existsSync("./data/whisk")) {
-        fs.mkdirSync("./data/whisk");
-        fs.writeFileSync("./data/whisk/.gitignore", "cache");
-    }
-    // Ensure that the cache directory exists
-    if (!fs.existsSync("./data/whisk/cache")) {
-        fs.mkdirSync("./data/whisk/cache");
+    if (!fs.existsSync(path.join(process.env.ROOT_DIR, `.whisk/cache`))) {
+        fs.mkdirSync(path.join(process.env.ROOT_DIR, `.whisk/cache`));
+        fs.writeFileSync(path.join(process.env.ROOT_DIR, `.whisk/cache/.gitignore`), "cache");
     }
 
     // Copy all modules
