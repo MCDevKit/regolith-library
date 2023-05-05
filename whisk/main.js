@@ -28,7 +28,7 @@ try {
         const [url, target] = data;
         if (!fs.existsSync(dir)) {
             clone(url, dir);
-            checkout(dir, module.version);
+            checkout(dir, module.version, url);
         } else {
             try {
                 fetch(dir);
@@ -38,7 +38,7 @@ try {
                 console.log("Removing cache and cloning again...");
                 fs.rmSync(dir, { recursive: true });
                 clone(url, dir);
-                checkout(dir, module.version);
+                checkout(dir, module.version, url);
             }
         }
         if (target) {

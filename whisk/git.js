@@ -49,7 +49,10 @@ function clone(repo, dir) {
 
 }
 
-function checkout(dir, version) {
+function checkout(dir, version, url) {
+    if (version === 'HEAD') {
+        version = getHeadSHA(url);
+    }
     const cmd = `git checkout ${version}`;
     console.log(`Running: ${cmd}`);
     try {
@@ -77,6 +80,19 @@ function fetch(dir, cooldown) {
     }
 }
 
+function getHeadSHA(url) {
+    const cmd = `git ls-remote ${url} HEAD`;
+    console.log(`Running: ${cmd}`);
+    try {
+        const output = exec(cmd).toString();
+        const sha = output.split('\n')[1].split('\t')[0].trim();
+        return sha;
+    } catch (e) {
+        console.log(e);
+        throw new Error(`Failed to get HEAD SHA for ${url}`);
+    }
+}
+
 function hashString(str) {
     // Create MD5 hash of the repo URL
     const hash = crypto.createHash('md5');
@@ -94,3 +110,4 @@ exports.clone = clone;
 exports.checkout = checkout;
 exports.getCachedRepoDir = getCachedRepoDir;
 exports.fetch = fetch;
+exports.getHeadSHA = getHeadSHA;
