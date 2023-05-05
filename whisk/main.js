@@ -32,8 +32,9 @@ try {
         } else {
             try {
                 fetch(dir);
-                checkout(dir, module.version);
+                checkout(dir, module.version, url);
             } catch (e) {
+                console.log(e);
                 console.log(`Failed to checkout ${module.version} for ${module.name}`);
                 console.log("Removing cache and cloning again...");
                 fs.rmSync(dir, { recursive: true });

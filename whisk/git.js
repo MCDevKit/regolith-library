@@ -69,14 +69,14 @@ function fetch(dir, cooldown) {
         // If the repo was updated in the last X minutes, don't fetch
         return;
     }
-    fs.utimesSync(dir, Date.now(), Date.now());
+    fs.utimesSync(dir, new Date(Date.now()), new Date(Date.now()));
     const cmd = `git fetch`;
     console.log(`Running: ${cmd}`);
     try {
         exec(cmd, { cwd: dir });
     } catch (e) {
         console.log(e);
-        throw new Error(`Failed to checkout ${version}`);
+        throw new Error(`Failed to fetch`);
     }
 }
 
