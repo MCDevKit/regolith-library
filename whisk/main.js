@@ -2,7 +2,7 @@ const process = require("process");
 const fs = require("fs");
 const path = require("path");
 const { Settings } = require("./models.js");
-const { clone, checkout, getCachedRepoDir, makeGitURL, fetch } = require("./git.js");
+const { clone, checkout, getCachedRepoDir, makeGitURL, fetch, pull, getGitStatus } = require("./git.js");
 const { whiskIt } = require("./whisk.js");
 
 // Big-ass try catch, to hide stack traces, when not in debug mode
@@ -30,12 +30,33 @@ try {
             clone(url, dir);
             checkout(dir, module.version, url);
         } else {
+            let status;
             try {
-                fetch(dir);
-                checkout(dir, module.version, url);
+                status = getGitStatus(dir);
+                if (!status.clean) {
+                    console.log(`Repo is not clean, removing cache and cloning again...`);
+                    fs.rmSync(dir, { recursive: true });
+                    clone(url, dir);
+                    checkout(dir, module.version, url);
+                }
+                if (status.local_branch === module.version || (module.version === 'HEAD' && status.local_branch !== 'HEAD (no branch)')) {
+                    pull(dir, settings.fetchDelay);
+                } else {
+                    try {
+                        fetch(dir, settings.fetchDelay);
+                        checkout(dir, module.version, url);
+                    } catch (e) {
+                        console.log(e);
+                        console.log(`Failed to checkout ${module.version} for ${module.name}`);
+                        console.log("Removing cache and cloning again...");
+                        fs.rmSync(dir, { recursive: true });
+                        clone(url, dir);
+                        checkout(dir, module.version, url);
+                    }
+                }
             } catch (e) {
                 console.log(e);
-                console.log(`Failed to checkout ${module.version} for ${module.name}`);
+                console.log(`Failed to get git status for ${dir}`);
                 console.log("Removing cache and cloning again...");
                 fs.rmSync(dir, { recursive: true });
                 clone(url, dir);

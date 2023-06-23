@@ -4,7 +4,7 @@ class Module {
             throw new Error("Module name must be specified");
         }
         this.name = json.name;
-        this.version = json.version ?? "HEAD";
+        this.version = json.version ?? 'HEAD';
     }
 }
 

@@ -1,10 +1,11 @@
 {
-    "description": "Copies contents of a GitHub repo into current addon.",
-    "filters": [
-        {
-            "runWith": "nodejs",
-            "script": "./main.js",
-            "name": "Whisking up modules..."
-        }
-    ]
+	"description": "Copies contents of a GitHub repo into current addon.",
+	"filters": [
+		{
+			"name": "Whisking up modules...",
+			"runWith": "nodejs",
+			"script": "./main.js"
+		}
+	],
+	"version": "1.0.1"
 }

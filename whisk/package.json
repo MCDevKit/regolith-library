@@ -9,6 +9,7 @@
   "version": "1.0.0",
   "main": "./main.js",
   "dependencies": {
+    "git-get-status": "^1.0.2",
     "glob": "^7.1.7"
   }
 }
