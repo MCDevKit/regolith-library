@@ -2,7 +2,7 @@ const process = require("process");
 const fs = require("fs");
 const path = require("path");
 const { Settings } = require("./models.js");
-const { clone, checkout, getCachedRepoDir, makeGitURL, fetch, pull, getGitStatus } = require("./git.js");
+const { clone, checkout, getCachedRepoDir, makeGitURL, fetch, pull, getGitStatus, isOnCooldown } = require("./git.js");
 const { whiskIt } = require("./whisk.js");
 
 // Big-ass try catch, to hide stack traces, when not in debug mode
@@ -29,10 +29,9 @@ try {
         if (!fs.existsSync(dir)) {
             clone(url, dir);
             checkout(dir, module.version, url);
-        } else {
-            let status;
+        } else if (!isOnCooldown(dir, settings.fetchDelay)){
             try {
-                status = getGitStatus(dir);
+                const status = getGitStatus(dir);
                 if (!status.clean) {
                     console.log(`Repo is not clean, removing cache and cloning again...`);
                     fs.rmSync(dir, { recursive: true });

@@ -163,3 +163,4 @@ exports.fetch = fetch;
 exports.pull = pull;
 exports.getGitStatus = getGitStatus;
 exports.getDefaultBranch = getDefaultBranch;
+exports.isOnCooldown = isOnCooldown;
