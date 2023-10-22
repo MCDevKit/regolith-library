@@ -1,0 +1,11 @@
+{
+	"description": "Checks common issues with addons.",
+	"filters": [
+		{
+			"name": "Checking the addon...",
+			"runWith": "python",
+			"script": "./sanity_check.py"
+		}
+	],
+	"version": "1.0.0"
+}

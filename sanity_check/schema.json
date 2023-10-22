@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "sanity_check",
+    "type": "object",
+    "properties": {
+        "fail_on_warnings": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to fail the build if there are warnings"
+        },
+        "fail_on_errors": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to fail the build if there are errors"
+        },
+        "log_errors": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to log information about fixes"
+        },
+        "fixes": {
+            "type": "object",
+            "description": "Object, that details which automatic fixes to apply",
+            "properties": {
+                "remove_bom": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to remove BOM (Byte Order Mark) from files"
+                },
+                "fix_property_types": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to fix incorrect values for range and default in entity properties"
+                }
+            }
+        }
+    }
+}
