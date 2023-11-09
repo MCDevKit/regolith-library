@@ -84,7 +84,7 @@ def find_incorrect_language_names(base_path):
     files = [
         f
         for f in os.listdir(os.path.join(base_path, "texts"))
-        if not os.path.isdir(os.path.join(base_path, f) and f.endswith(".lang"))
+        if (not os.path.isdir(os.path.join(base_path, f)) and f.endswith(".lang"))
     ]
     for file in files:
         split = file.split(".")[0].split("_")
@@ -127,7 +127,7 @@ def find_missing_translations(base_path):
     files = [
         f
         for f in os.listdir(os.path.join(base_path, "texts"))
-        if not os.path.isdir(os.path.join(base_path, f) and f.endswith(".lang"))
+        if (not os.path.isdir(os.path.join(base_path, f)) and f.endswith(".lang"))
     ]
     lang_dict = {}
     all_keys = set()
