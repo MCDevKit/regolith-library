@@ -154,7 +154,12 @@ def find_incorrect_property_types(base_path):
         with open(file, "r", encoding="utf8") as f:
             text = f.read()
             listener = verbose_json.PropertyListener(text)
-            verbose_json.parseJson(text, listener)
+            try:
+                verbose_json.parseJson(text, listener)
+            except e:
+                print(e)
+                print('File "{}" has invalid JSON.'.format(file))
+                continue
             for element in listener.issueList:
                 warn(f"{file} has an incorrect value type. {element.message}.")
                 if config.config.fixes.fix_property_types and element.can_fix():
