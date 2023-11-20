@@ -50,8 +50,8 @@ if (settings.worldFolder) {
 if (location) {
     console.log(`Using world: ${location}`);
     // append world folder to archive
-    archive.glob('**/*', { cwd: location, ignore: ['*.dat'] });
     if (settings.worldVersion !== void 0) {
+        archive.glob('**/*', { cwd: location, ignore: ['*.dat'] });
         await (async () => {
             const file = fs.readFileSync(location + '/level.dat');
             const result = await nbt.parse(file);
@@ -82,6 +82,8 @@ if (location) {
             header.writeInt16LE(source.length, 4)
             archive.append(Buffer.concat([header, source]), { name: 'level.dat' });
         })();
+    } else {
+        archive.glob('**/*', { cwd: location });
     }
 }
 
