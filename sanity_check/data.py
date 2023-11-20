@@ -470,7 +470,7 @@ BP_FOLDERS = [
     "biomes",
     "blocks",
     "entities",
-    "feature_rule",
+    "feature_rules",
     "features",
     "functions",
     "items",
