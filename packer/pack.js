@@ -12,7 +12,7 @@ const config = JSON.parse(fs.readFileSync(process.env.ROOT_DIR + "/config.json",
 const git = prepareGitInfo();
 
 const defaultName = "${config.name}.mcworld";
-const outputPath = process.env.ROOT_DIR + '/' + eval("`" + (settings.output || defaultName) + "`");
+const outputPath = process.env.ROOT_DIR + '/' + templateString(settings.output || defaultName);
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 const output = createWriteStream(outputPath);
 const archive = archiver('zip');
@@ -50,31 +50,41 @@ if (settings.worldFolder) {
 if (location) {
     console.log(`Using world: ${location}`);
     // append world folder to archive
-    if (settings.worldVersion !== void 0) {
-        archive.glob('**/*', { cwd: location, ignore: ['*.dat'] });
+    if (settings.worldVersion !== void 0 || settings.worldName !== void 0) {
+        archive.glob('**/*', { cwd: location, ignore: ['*.dat', 'levelname.txt'] });
         await (async () => {
             const file = fs.readFileSync(location + '/level.dat');
             const result = await nbt.parse(file);
             const level = result.parsed;
             const type = result.type;
-            if (settings.worldVersion === 'release') {
-                const response = await fetch('https://raw.githubusercontent.com/MCMrARM/mc-w10-versiondb/master/versions.json.min')
-                const versions = (await response.json()).filter(v => v[2] === 0);
-                settings.worldVersion = versions[versions.length - 1][0].split('.').map(x => parseInt(x));
-            }
-            if (settings.worldVersion === null) {
-                console.log('Removing world version');
-                delete level.value.MinimumCompatibleClientVersion;
-                delete level.value.InventoryVersion;
-                delete level.value.lastOpenedWithVersion;
-            } else {
-                console.log('Changing world version to ' + settings.worldVersion.join('.'));
-                while (settings.worldVersion.length < 5) {
-                    settings.worldVersion.push(0);
+            if (settings.worldVersion !== void 0) {
+                if (settings.worldVersion === 'release') {
+                    const response = await fetch('https://raw.githubusercontent.com/MCMrARM/mc-w10-versiondb/master/versions.json.min')
+                    const versions = (await response.json()).filter(v => v[2] === 0);
+                    settings.worldVersion = versions[versions.length - 1][0].split('.').map(x => parseInt(x));
                 }
-                level.value.MinimumCompatibleClientVersion = nbt.list(nbt.int(settings.worldVersion.slice(0, 5)));
-                level.value.InventoryVersion = nbt.string(settings.worldVersion.slice(0, 3).join('.'));
-                level.value.lastOpenedWithVersion = level.value.MinimumCompatibleClientVersion;
+                if (settings.worldVersion === null) {
+                    console.log('Removing world version');
+                    delete level.value.MinimumCompatibleClientVersion;
+                    delete level.value.InventoryVersion;
+                    delete level.value.lastOpenedWithVersion;
+                } else {
+                    console.log('Changing world version to ' + settings.worldVersion.join('.'));
+                    while (settings.worldVersion.length < 5) {
+                        settings.worldVersion.push(0);
+                    }
+                    level.value.MinimumCompatibleClientVersion = nbt.list(nbt.int(settings.worldVersion.slice(0, 5)));
+                    level.value.InventoryVersion = nbt.string(settings.worldVersion.slice(0, 3).join('.'));
+                    level.value.lastOpenedWithVersion = level.value.MinimumCompatibleClientVersion;
+                }
+            }
+            if (settings.worldName !== void 0) {
+                const newName = templateString(settings.worldName);
+                console.log('Changing world name to ' + newName);
+                level.value.LevelName = nbt.string(newName);
+                archive.append(newName, { name: 'levelname.txt' });
+            } else {
+                archive.glob('levelname.txt', { cwd: location });
             }
             const source = nbt.writeUncompressed(level, type);
             const header = Buffer.alloc(8)
@@ -121,4 +131,8 @@ function prepareGitInfo() {
         console.warn('Failed to get current branch');
     }
     return result;
+}
+
+function templateString(str) {
+    return eval("`" + str + "`");
 }
