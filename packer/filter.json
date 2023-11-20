@@ -1,0 +1,10 @@
+{
+    "description": "Packs world with packs into a .mcaddon file.",
+    "filters": [
+        {
+            "runWith": "nodejs",
+            "script": "./pack.js",
+            "name": "packer"
+        }
+    ]
+}

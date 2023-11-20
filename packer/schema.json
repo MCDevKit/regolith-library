@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "packer",
+    "type": "object",
+    "properties": {
+        "output": {
+            "type": "string",
+            "description": "Output file name. It uses JS template literal, so you can use `${config.name}` and other properties from Regolith config."
+        },
+        "worldFolder": {
+            "type": "string",
+            "description": "The name of the world folder inside `minecraftWorlds` folder"
+        },
+        "worldPath": {
+            "type": "string",
+            "description": "The path to the world folder"
+        },
+        "worldVersion": {
+            "oneOf": [
+                {
+                    "type":"array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "maxItems": 3
+                },
+                {
+                    "type": "string",
+                    "enum": ["release"]
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "The world version to set. Not specifying the field will not do anything, setting to `null` will clear the version completely and setting to `release` will set the latest release"
+        }
+    }
+}
