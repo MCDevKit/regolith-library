@@ -3,16 +3,22 @@ import archiver from 'archiver';
 import fs from 'fs';
 import nbt from 'prismarine-nbt';
 import fetch from 'node-fetch';
+import { execSync } from 'child_process';
+import path from 'path';
 
 const settings = process.argv[2] ? JSON.parse(process.argv[2]) : {};
+// variables for eval
 const config = JSON.parse(fs.readFileSync(process.env.ROOT_DIR + "/config.json", 'utf8'));
-const scopedEval = (scope, script) => Function(`"use strict"; ${script}`).bind(scope)();
+const git = prepareGitInfo();
+
 const defaultName = "${config.name}.mcworld";
-const output = createWriteStream(process.env.ROOT_DIR + '/' + scopedEval({config:config}, "return `" + (settings.name || defaultName) + "`;"));
+const outputPath = process.env.ROOT_DIR + '/' + eval("`" + (settings.output || defaultName) + "`");
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+const output = createWriteStream(outputPath);
 const archive = archiver('zip');
 
 output.on('close', function () {
-    console.log('MCAddon file created.');
+    console.log('Pack file created.');
 });
 
 archive.on('error', function (err) {
@@ -84,3 +90,33 @@ archive.directory('RP/', 'resource_packs/RP/');
 archive.directory('BP/', 'behavior_packs/BP/');
 
 archive.finalize();
+
+function prepareGitInfo() {
+    const result = {
+        branch: null,
+        commit: null,
+        tag: null,
+        tagCommit: null,
+    };
+    try {
+        result.tag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        try {
+            result.tagCommit = execSync('git rev-list -n 1 ' + result.tag, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        } catch (e) {
+            console.warn('Failed to get latest tag commit');
+        }
+    } catch (e) {
+        console.warn('Failed to get latest tag');
+    }
+    try {
+        result.commit = execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch (e) {
+        console.warn('Failed to get current commit');
+    }
+    try {
+        result.branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch (e) {
+        console.warn('Failed to get current branch');
+    }
+    return result;
+}
