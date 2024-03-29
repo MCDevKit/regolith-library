@@ -527,6 +527,10 @@ RP_FILES = normalize_data(
         "sounds/music_definitions.json",
         "texts/languages.json",
         "texts/language_names.json",
+        "textures/item_texture.json",
+        "textures/terrain_texture.json",
+        "textures/textures_list.json",
+        "textures/flipbook_textures.json",
     ]
 )
 
