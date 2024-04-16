@@ -9,7 +9,7 @@ import verbose_json
 
 
 def warn(msg):
-    print("[WARNING] " + msg)
+    print("[WARNING] " + msg, file=sys.stderr)
     if config.config.fail_on_warnings:
         sys.exit(1)
 
@@ -20,7 +20,7 @@ def log_fix(msg):
 
 
 def error(msg):
-    print("[ERROR] " + msg)
+    print("[ERROR] " + msg, file=sys.stderr)
     if config.config.fail_on_errors:
         sys.exit(1)
 
