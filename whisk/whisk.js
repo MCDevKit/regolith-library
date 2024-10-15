@@ -76,6 +76,40 @@ function isPathWithin(child, ...parents) {
     return false;
 }
 
+/**
+ * Simple object check.
+ * @param item
+ * @returns {boolean}
+ * Author: https://stackoverflow.com/a/34749873
+ */
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+/**
+ * Deep merge two objects.
+ * @param target
+ * @param ...sources
+ * Author: https://stackoverflow.com/a/34749873
+ */
+function mergeDeep(target, ...sources) {
+    if (!sources.length) return target;
+    const source = sources.shift();
+
+    if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (isObject(source[key])) {
+                if (!target[key]) Object.assign(target, { [key]: {} });
+                mergeDeep(target[key], source[key]);
+            } else {
+                Object.assign(target, { [key]: source[key] });
+            }
+        }
+    }
+
+    return mergeDeep(target, ...sources);
+}
+
 function printDiagnostics(diagnostics) {
     diagnostics.forEach(diagnostic => {
         if (diagnostic.file) {
@@ -125,7 +159,7 @@ function whiskIt(dir, settings, module) {
             });
 
             const emitResult = program.emit();
-        
+
             if (emitResult.emitSkipped) {
                 const diagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
                 printDiagnostics(diagnostics);
@@ -221,7 +255,20 @@ function whiskIt(dir, settings, module) {
                         console.log(`Target path ${targetPath}`);
                     }
                     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-                    fs.copyFileSync(absPath, targetPath);
+                    if (fs.existsSync(targetPath)) {
+                        if (targetPath.endsWith('.json') || targetPath.endsWith('.material')) {
+                            // Load both files as JSON and merge them
+                            console.log(`Merging ${targetPath} and ${absPath}`)
+                            const targetJson = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+                            const sourceJson = JSON.parse(fs.readFileSync(absPath, 'utf8'));
+                            mergeDeep(targetJson, sourceJson);
+                            fs.writeFileSync(targetPath, JSON.stringify(targetJson, null, 4));
+                        } else {
+                            console.log(`Skipping ${targetPath}, as it already exists`);
+                        }
+                    } else {
+                        fs.copyFileSync(absPath, targetPath);
+                    }
                 }
             }
         }
