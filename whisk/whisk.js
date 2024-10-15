@@ -2,7 +2,7 @@ const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
 const { WhiskConfig } = require('./models.js');
-import * as ts from "typescript";
+const ts = require('typescript')
 
 function filterFiles(directory, includePatterns, excludePatterns, callback) {
     const includedFiles = new Set();
@@ -101,9 +101,15 @@ function whiskIt(dir, settings, module) {
     if (fs.existsSync(tsconfigPath) && fs.existsSync('./data/gametests/src')) {
         // Create TS declarations
         try {
-            const config = ts.readConfigFile(tsconfigPath);
+            const outputPath = path.join(dir, '/packs/data/gametests/scripts/');
+            if (fs.existsSync(outputPath)) {
+                // Remove recursively
+                fs.rmSync(outputPath, { recursive: true });
+            }
+
+            const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
             if (config.error) {
-                throw new Error(config.error);
+                throw new Error(JSON.stringify(config.error));
             }
             const parsedCommandLine = ts.parseJsonConfigFileContent(
                 config.config,
@@ -126,7 +132,6 @@ function whiskIt(dir, settings, module) {
                 throw new Error('TypeScript compilation failed');
             }
 
-            const outputPath = path.join(dir, '/packs/data/gametests/', parsedCommandLine.options.outDir);
             if (!fs.existsSync(outputPath)) {
                 throw new Error('Declaration not found');
             }
@@ -136,9 +141,9 @@ function whiskIt(dir, settings, module) {
                     throw new Error(err);
                 }
                 files.forEach(file => {
-                    const targetPath = path.join(projectRoot, '/packs/data/gametests/src/', path.relative(outputPath, file));
+                    const targetPath = path.join(projectRoot, '/packs/data/gametests/src/', file);
                     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-                    fs.copyFileSync(file, targetPath);
+                    fs.copyFileSync(path.join(outputPath, file), targetPath);
                 });
             });
         } catch (e) {
