@@ -2,6 +2,7 @@ const glob = require('glob');
 const path = require('path');
 const fs = require('fs');
 const { WhiskConfig } = require('./models.js');
+import * as ts from "typescript";
 
 function filterFiles(directory, includePatterns, excludePatterns, callback) {
     const includedFiles = new Set();
@@ -75,6 +76,18 @@ function isPathWithin(child, ...parents) {
     return false;
 }
 
+function printDiagnostics(diagnostics) {
+    diagnostics.forEach(diagnostic => {
+        if (diagnostic.file) {
+            const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+            console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+        } else {
+            console.log(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+        }
+    });
+}
+
 function whiskIt(dir, settings, module) {
     let debug = settings.debug;
     let whiskConfig;
@@ -82,6 +95,55 @@ function whiskIt(dir, settings, module) {
         whiskConfig = new WhiskConfig(JSON.parse(fs.readFileSync(path.join(dir, 'whisk.json'))));
     } else {
         whiskConfig = new WhiskConfig({});
+    }
+    // If gametests exist in both packs
+    const tsconfigPath = path.join(dir, '/packs/data/gametests/tsconfig.json');
+    if (fs.existsSync(tsconfigPath) && fs.existsSync('./data/gametests/src')) {
+        // Create TS declarations
+        try {
+            const config = ts.readConfigFile(tsconfigPath);
+            if (config.error) {
+                throw new Error(config.error);
+            }
+            const parsedCommandLine = ts.parseJsonConfigFileContent(
+                config.config,
+                ts.sys,
+                path.dirname(tsconfigPath)
+            );
+            parsedCommandLine.options.declaration = true;
+            parsedCommandLine.options.emitDeclarationOnly = true;
+
+            const program = ts.createProgram({
+                rootNames: parsedCommandLine.fileNames,
+                options: parsedCommandLine.options
+            });
+
+            const emitResult = program.emit();
+        
+            if (emitResult.emitSkipped) {
+                const diagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
+                printDiagnostics(diagnostics);
+                throw new Error('TypeScript compilation failed');
+            }
+
+            const outputPath = path.join(dir, '/packs/data/gametests/', parsedCommandLine.options.outDir);
+            if (!fs.existsSync(outputPath)) {
+                throw new Error('Declaration not found');
+            }
+            const projectRoot = process.env.ROOT_DIR;
+            filterFiles(outputPath, ['**/*.d.ts'], [], (err, files) => {
+                if (err) {
+                    throw new Error(err);
+                }
+                files.forEach(file => {
+                    const targetPath = path.join(projectRoot, '/packs/data/gametests/src/', path.relative(outputPath, file));
+                    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                    fs.copyFileSync(file, targetPath);
+                });
+            });
+        } catch (e) {
+            console.error(e);
+        }
     }
     filterFiles(dir, whiskConfig.include, whiskConfig.exclude, (err, files) => {
         if (err) {
