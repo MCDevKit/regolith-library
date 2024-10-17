@@ -136,10 +136,6 @@ function whiskIt(dir, settings, module) {
         // Create TS declarations
         try {
             const outputPath = path.join(dir, '/packs/data/gametests/scripts/');
-            if (fs.existsSync(outputPath)) {
-                // Remove recursively
-                fs.rmSync(outputPath, { recursive: true });
-            }
 
             const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
             if (config.error) {
@@ -176,8 +172,17 @@ function whiskIt(dir, settings, module) {
                 }
                 files.forEach(file => {
                     const targetPath = path.join(projectRoot, '/packs/data/gametests/src/', file);
-                    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-                    fs.copyFileSync(path.join(outputPath, file), targetPath);
+                    if (fs.existsSync(targetPath)) {
+                        const existing = fs.readFileSync(targetPath, 'utf8').replaceAll('\r\n', '\n');
+                        const newJson = fs.readFileSync(path.join(outputPath, file), 'utf8').replaceAll('\r\n', '\n');
+                        if (existing !== newJson) {
+                            console.log(`Updating ${targetPath}`);
+                            fs.writeFileSync(targetPath, newJson);
+                        }
+                    } else {
+                        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                        fs.copyFileSync(path.join(outputPath, file), targetPath);
+                    }
                 });
             });
         } catch (e) {
