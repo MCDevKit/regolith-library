@@ -126,7 +126,7 @@ function whiskIt(dir, settings, module) {
     let debug = settings.debug;
     let whiskConfig;
     if (fs.existsSync(path.join(dir, 'whisk.json'))) {
-        whiskConfig = new WhiskConfig(JSON.parse(fs.readFileSync(path.join(dir, 'whisk.json'))));
+        whiskConfig = new WhiskConfig(JSON.parse(stripComments(fs.readFileSync(path.join(dir, 'whisk.json')))));
     } else {
         whiskConfig = new WhiskConfig({});
     }
@@ -195,7 +195,7 @@ function whiskIt(dir, settings, module) {
         }
 
         if (files.includes('config.json')) {
-            const config = JSON.parse(fs.readFileSync(path.join(dir, 'config.json')));
+            const config = JSON.parse(stripComments(fs.readFileSync(path.join(dir, 'config.json'))));
             // Setup default paths
             let bp = './packs/BP';
             let rp = './packs/RP';
@@ -217,7 +217,7 @@ function whiskIt(dir, settings, module) {
             // Check filters
             if (config.regolith && fs.existsSync(path.join(process.env.ROOT_DIR, 'config.json'))) {
                 if (config.regolith.filterDefinitions && config.regolith.profiles && config.regolith.profiles.default && config.regolith.profiles.default.filters) {
-                    const projectConfig = JSON.parse(fs.readFileSync(path.join(process.env.ROOT_DIR, 'config.json')));
+                    const projectConfig = JSON.parse(stripComments(fs.readFileSync(path.join(process.env.ROOT_DIR, 'config.json'))));
                     let projectUsedFilters = [];
                     for (const filter of Object.keys(projectConfig.regolith.filterDefinitions)) {
                         if (projectConfig.regolith.filterDefinitions[filter].url && Object.keys(projectConfig.regolith.profiles).some((p) => projectConfig.regolith.profiles[p].filters && projectConfig.regolith.profiles[p].filters.some((f) => f.filter === filter))) {
@@ -264,8 +264,8 @@ function whiskIt(dir, settings, module) {
                         if (targetPath.endsWith('.json') || targetPath.endsWith('.material')) {
                             // Load both files as JSON and merge them
                             console.log(`Merging ${targetPath} and ${absPath}`)
-                            const targetJson = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
-                            const sourceJson = JSON.parse(fs.readFileSync(absPath, 'utf8'));
+                            const targetJson = JSON.parse(stripComments(fs.readFileSync(targetPath, 'utf8')));
+                            const sourceJson = JSON.parse(stripComments(fs.readFileSync(absPath, 'utf8')));
                             mergeDeep(targetJson, sourceJson);
                             fs.writeFileSync(targetPath, JSON.stringify(targetJson, null, 4));
                         } else {
@@ -278,6 +278,10 @@ function whiskIt(dir, settings, module) {
             }
         }
     });
+}
+
+function stripComments(str) {
+    return str.replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,'');
 }
 
 exports.whiskIt = whiskIt;
