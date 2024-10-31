@@ -281,7 +281,7 @@ function whiskIt(dir, settings, module) {
 }
 
 function stripComments(str) {
-    return str.replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,'');
+    return str.toString().replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,'');
 }
 
 exports.whiskIt = whiskIt;
