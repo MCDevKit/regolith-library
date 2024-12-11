@@ -51,7 +51,7 @@ function clone(repo, dir) {
     if (!repo) {
         throw new Error(`Invalid repo: ${repo}`);
     }
-    const cmd = `git clone ${repo} ${dir}`;
+    const cmd = `git clone "${repo}" "${dir}"`;
     console.log(`Running: ${cmd}`);
     try {
         exec(cmd);
