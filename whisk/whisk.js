@@ -4,6 +4,8 @@ const fs = require('fs');
 const { WhiskConfig } = require('./models.js');
 const ts = require('typescript')
 
+const JsonFileExtensions = ['.json', '.material', '.templ', '.modl'];
+
 function filterFiles(directory, includePatterns, excludePatterns, callback) {
     const includedFiles = new Set();
 
@@ -261,7 +263,7 @@ function whiskIt(dir, settings, module) {
                     }
                     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
                     if (fs.existsSync(targetPath)) {
-                        if (targetPath.endsWith('.json') || targetPath.endsWith('.material')) {
+                        if (JsonFileExtensions.includes(path.extname(targetPath))) {
                             // Load both files as JSON and merge them
                             console.log(`Merging ${targetPath} and ${absPath}`)
                             const targetJson = JSON.parse(stripComments(fs.readFileSync(targetPath, 'utf8')));
