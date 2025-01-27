@@ -23,7 +23,7 @@
                 "--scope",
                 "data/json_templating_engine",
                 "--cache-dir",
-                "data/jsonte/cache",
+                "../jsonte/cache",
                 "BP",
                 "RP"
             ],
@@ -41,7 +41,7 @@
                 "--scope",
                 "data/json_templating_engine",
                 "--cache-dir",
-                "data/jsonte/cache",
+                "../jsonte/cache",
                 "BP",
                 "RP"
             ],
@@ -59,7 +59,7 @@
                 "--scope",
                 "data/json_templating_engine",
                 "--cache-dir",
-                "data/jsonte/cache",
+                "../jsonte/cache",
                 "BP",
                 "RP"
             ],
@@ -77,7 +77,7 @@
                 "--scope",
                 "data/json_templating_engine",
                 "--cache-dir",
-                "data/jsonte/cache",
+                "../jsonte/cache",
                 "BP",
                 "RP"
             ],
