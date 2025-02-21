@@ -20,6 +20,7 @@ class WhiskConfig {
     constructor(json) {
         this.include = json.include ?? ['**/*'];
         this.exclude = json.exclude ?? [];
+        this.copyToSource = json.copyToSource ?? {};
     }
 }
 

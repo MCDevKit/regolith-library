@@ -1,3 +1,6 @@
 {
-    "exclude": ["node_modules/**"]
+    "exclude": ["node_modules/**"],
+    "copyToSource": {
+        "packs/data/gametests/dist/*.d.ts": "packs/data/gametests/src/types/"
+    }
 }
