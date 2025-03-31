@@ -24,8 +24,8 @@
                 "data/json_templating_engine",
                 "--cache-dir",
                 "../jsonte/cache",
-                "BP",
-                "RP"
+                "BP/",
+                "RP/"
             ],
             "when": "(semver(version) >= semver('1.0.4') || semver(version) == semver('0.0.0')) && settings?.useLocal",
             "name": "Templating JSON template files"
@@ -42,8 +42,8 @@
                 "data/json_templating_engine",
                 "--cache-dir",
                 "../jsonte/cache",
-                "BP",
-                "RP"
+                "BP/",
+                "RP/"
             ],
             "when": "((semver(version) < semver('1.0.4') && semver(version) != semver('0.0.0')) || !settings?.useLocal) && os == 'windows'",
             "name": "Templating JSON template files"
