@@ -156,7 +156,7 @@ def find_incorrect_property_types():
             listener = verbose_json.PropertyListener(text)
             try:
                 verbose_json.parseJson(text, listener)
-            except e:
+            except Exception as e:
                 print(e)
                 print('File "{}" has invalid JSON.'.format(file))
                 continue
