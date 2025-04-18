@@ -143,11 +143,11 @@ def find_missing_translations(base_path):
                 )
 
 
-def find_incorrect_property_types(base_path):
-    if not os.path.exists(os.path.join(base_path, "entities")):
+def find_incorrect_property_types():
+    if not os.path.exists(os.path.join("BP", "entities")):
         return
     files = utils.list_files_with_extension(
-        os.path.join(base_path, "entities"), ["json"]
+        os.path.join("BP", "entities"), ["json"]
     )
     for file in files:
         text = None
@@ -176,7 +176,36 @@ def has_bom(path):
         return f.read(3) == b"\xef\xbb\xbf"
 
 
+def find_missing_sounds():
+    sound_def_path = os.path.join("RP", "sounds", "sound_definitions.json")
+    if not os.path.exists(sound_def_path):
+        return
+    with open(sound_def_path, "r", encoding="utf8") as f:
+        data = json.load(f)
+    sound_defs = data.get("sound_definitions", {})
+    for key, defn in sound_defs.items():
+        for sound in defn.get("sounds", []):
+            name = sound.get("name") if isinstance(sound, dict) else sound
+            sound_file_ogg = os.path.join("RP", f"{name}.ogg")
+            sound_file_wav = os.path.join("RP", f"{name}.wav")
+            if not os.path.exists(sound_file_ogg) and not os.path.exists(sound_file_wav):
+                warn(f"RP{os.path.sep}{name}.[ogg|wav] is missing for sound definition {key}.")
+
+def find_unsupported_sound_files():
+    sound_dir = os.path.join("RP", "sounds")
+    if not os.path.exists(sound_dir):
+        return
+    for f in os.listdir(sound_dir):
+        full_path = os.path.join(sound_dir, f)
+        if os.path.isdir(full_path):
+            continue
+        ext = f.rsplit(".", 1)[-1].lower() if "." in f else ""
+        if ext not in ["json", "ogg", "fsb", "wav"]:
+            warn(f"RP{os.path.sep}sounds{os.path.sep}{f} has unsupported extension .{ext}.")
+
+
 if __name__ == "__main__":
+    # Shared checks for both packs
     find_bom("BP")
     find_bom("RP")
     find_folder_misspellings("BP", data.BP_FOLDERS)
@@ -187,4 +216,10 @@ if __name__ == "__main__":
     find_incorrect_language_names("RP")
     find_missing_translations("BP")
     find_missing_translations("RP")
-    find_incorrect_property_types("BP")
+
+    # BP specific checks
+    find_incorrect_property_types()
+
+    # RP specific checks
+    find_unsupported_sound_files()
+    find_missing_sounds()
