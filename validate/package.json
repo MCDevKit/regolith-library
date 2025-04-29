@@ -1,0 +1,15 @@
+{
+  "name": "validate",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "author": "stirante",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@minecraft/creator-tools": "^0.10.1"
+  }
+}

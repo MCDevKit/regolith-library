@@ -1,0 +1,10 @@
+{
+    "description": "Performs mctools.dev validation.",
+    "filters": [
+        {
+            "runWith": "nodejs",
+            "script": "./main.js",
+            "name": "validate"
+        }
+    ]
+}

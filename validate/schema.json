@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "validate",
+    "type": "object",
+    "properties": {
+        "suite": {
+            "type": "string",
+            "description": "The suite to run.",
+            "default": "addon",
+            "enum": [
+                "all",
+                "default",
+                "addon",
+                "currentplatform",
+                "main"
+            ]
+        },
+        "failOnError": {
+            "type": "boolean",
+            "description": "Fail the run if there are any errors.",
+            "default": false
+        },
+        "annoyance": {
+            "type": "string",
+            "description": "Annoyance to show to make sure the user knows something went wrong.",
+            "default": "none",
+            "enum": [
+                "alert",
+                "none"
+            ]
+        }
+    }
+}
