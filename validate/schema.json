@@ -2,6 +2,38 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "validate",
     "type": "object",
+    "definitions": {
+        "log": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "description": "The level of the log.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "error",
+                                "warning",
+                                "info"
+                            ]
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ]
+                },
+                "error": {
+                    "type": "string",
+                    "description": "The error name. E.g. UNKJSON."
+                },
+                "id": {
+                    "type": "number",
+                    "description": "The id of the log."
+                }
+            },
+            "additionalProperties": true
+        }
+    },
     "properties": {
         "suite": {
             "type": "string",
@@ -28,6 +60,26 @@
                 "alert",
                 "none"
             ]
+        },
+        "logOverrides": {
+            "type": "array",
+            "description": "Overrides for log messages. Usually used to ignore certain errors.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "$ref": "#/definitions/log",
+                        "description": "The log to match.",
+                        "required": [
+                            "error"
+                        ]
+                    },
+                    "override": {
+                        "description": "The override.",
+                        "$ref": "#/definitions/log"
+                    }
+                }
+            }
         }
     }
 }

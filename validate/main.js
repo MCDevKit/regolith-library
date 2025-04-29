@@ -28,15 +28,41 @@ require("@minecraft/creator-tools/cli/TaskWorker.js");
 const AnnoyanceNone = "none";
 const AnnoyanceAlert = "alert";
 
+const LevelMap = {
+  "error": InfoItemType.error,
+  "warning": InfoItemType.warning,
+  "info": InfoItemType.info,
+}
+
+const FieldMap = {
+  "level": "iTp",
+  "error": "gId",
+  "id": "gIx",
+  // All other fields are the same.
+}
+
+// const overrideTest = {
+//   "match": {
+//     "level": "error",
+//     "error": "CADDONREQ",
+//     "id": 101,
+//     "d": "crafting_item_catalog.json"
+//   },
+//   "override": {
+//     "level": "warning"
+//   }
+// }
+
 const defaultSettings = {
   suite: "addon",
   annoyance: AnnoyanceNone,
   failOnError: false,
+  logOverrides: [],
 };
 const settings = Object.assign(
   {},
   defaultSettings,
-  (JSON.parse(process.argv[2] || "{}") || {})
+  (JSON.parse(process.argv[2] || "{}") || {}),
 );
 
 function windowsAlert(message, title = "Alert") {
@@ -130,6 +156,36 @@ async function validate() {
     displayVerbose: localEnv.displayVerbose,
   });
   if (result !== undefined) {
+    // Apply log overrides based on settings.logOverrides
+    if (settings.logOverrides && settings.logOverrides.length) {
+      for (const ovr of settings.logOverrides) {
+        const { match, override: ov } = ovr;
+        for (const item of result[0].infoSetData.items) {
+          let matched = true;
+          for (const [key, val] of Object.entries(match)) {
+            const field = FieldMap[key] || key;
+            let itemVal = item[field];
+            let matchVal = val;
+            if (key === 'level') {
+              matchVal = typeof matchVal === 'string' ? LevelMap[matchVal] : matchVal;
+            }
+            if (itemVal !== matchVal) {
+              matched = false;
+              break;
+            }
+          }
+          if (!matched) continue;
+          for (const [key, val] of Object.entries(ov)) {
+            const field = FieldMap[key] || key;
+            let newVal = val;
+            if (key === 'level') {
+              newVal = typeof newVal === 'string' ? LevelMap[newVal] : newVal;
+            }
+            item[field] = newVal;
+          }
+        }
+      }
+    }
     let hasErrors = false;
     const groupedErrors = new Map();
     result[0].infoSetData.items
