@@ -28,16 +28,16 @@ require("@minecraft/creator-tools/cli/TaskWorker.js");
 const AnnoyanceNone = "none";
 const AnnoyanceAlert = "alert";
 
-const settings = Object.assign(
-  {},
-  defaultSettings,
-  JSON.parse(process.argv[2]) || {}
-);
 const defaultSettings = {
   suite: "addon",
   annoyance: AnnoyanceNone,
   failOnError: false,
 };
+const settings = Object.assign(
+  {},
+  defaultSettings,
+  (JSON.parse(process.argv[2] || "{}") || {})
+);
 
 function windowsAlert(message, title = "Alert") {
   // Check if the OS is Windows
