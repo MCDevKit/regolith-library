@@ -14,6 +14,7 @@ const ClUtils = defaultImport(ClUtilsModule);
 const { OutputType, TaskType } = ClUtilsModule;
 const { InfoItemType } = require("@minecraft/creator-tools/info/IInfoItemData.js");
 import { exec } from "child_process";
+import fs from 'fs';
 let executeTask;
 try {
   // Let's reuse the expose function to get the executeTask function.
@@ -40,18 +41,6 @@ const FieldMap = {
   "id": "gIx",
   // All other fields are the same.
 }
-
-// const overrideTest = {
-//   "match": {
-//     "level": "error",
-//     "error": "CADDONREQ",
-//     "id": 101,
-//     "d": "crafting_item_catalog.json"
-//   },
-//   "override": {
-//     "level": "warning"
-//   }
-// }
 
 const defaultSettings = {
   suite: "addon",
@@ -94,6 +83,9 @@ let executionTaskType = TaskType.noCommand;
 
 let inputFolder = "./";
 let outputFolder = "./mct-output/";
+
+// Clean output folder
+fs.rmSync(outputFolder, { recursive: true, force: true });
 
 localEnv = new LocalEnvironment(true);
 
