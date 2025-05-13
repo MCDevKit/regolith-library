@@ -35,7 +35,7 @@ def find_bom(base_path):
                 with open(f, "rb") as file:
                     file.read(3)
                     content = file.read()
-                with open(f, "wb", encoding="utf8") as file:
+                with open(f, "wb") as file:
                     file.write(content)
             else:
                 warn(f"{f} has a BOM. This is not allowed.")
