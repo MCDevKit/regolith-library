@@ -203,6 +203,35 @@ def find_unsupported_sound_files():
         if ext not in ["json", "ogg", "fsb", "wav"]:
             warn(f"RP{os.path.sep}sounds{os.path.sep}{f} has unsupported extension .{ext}.")
 
+def find_duplicated_recipe_ids():
+    recipe_dir = os.path.join("BP", "recipes")
+    files = utils.list_files_with_extension(recipe_dir, ["json"])
+    recipe_ids = set()
+    for file in files:
+        try:
+            with open(file, "r", encoding="utf8") as f:
+                data = json.load(f)
+            id = None
+            if "minecraft:recipe_shaped" in data:
+                id = data["minecraft:recipe_shaped"]["description"]["identifier"]
+            elif "minecraft:recipe_shapeless" in data:
+                id = data["minecraft:recipe_shapeless"]["description"]["identifier"]
+            elif "minecraft:recipe_furnace" in data:
+                id = data["minecraft:recipe_shapeless"]["description"]["identifier"]
+            else:
+                # keys starting with `minecraft:`
+                candidates = [k for k in data.keys() if k.startswith("minecraft:")]
+                if len(candidates) == 1:
+                    warn(f"{file} has an unsupported recipe type {candidates[0]}.")
+                else:
+                    warn(f"{file} has an unsupported recipe type {candidates}.")
+                continue
+            if id is not None and id in recipe_ids:
+                warn(f"{file} has duplicated recipe ID {id}.")
+            recipe_ids.add(id)
+        except Exception as e:
+            print(e)
+            print(f"File {file} has invalid JSON.")
 
 if __name__ == "__main__":
     # Shared checks for both packs
@@ -219,6 +248,7 @@ if __name__ == "__main__":
 
     # BP specific checks
     find_incorrect_property_types()
+    find_duplicated_recipe_ids()
 
     # RP specific checks
     find_unsupported_sound_files()
