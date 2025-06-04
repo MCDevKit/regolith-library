@@ -222,16 +222,15 @@ def find_duplicated_recipe_ids():
                 # keys starting with `minecraft:`
                 candidates = [k for k in data.keys() if k.startswith("minecraft:")]
                 if len(candidates) == 1:
-                    warn(f"{file} has an unsupported recipe type {candidates[0]}.")
+                    print(f"{file} has an unsupported recipe type {candidates[0]}.")
                 else:
-                    warn(f"{file} has an unsupported recipe type {candidates}.")
+                    print(f"{file} has an unsupported recipe type {candidates}.")
                 continue
             if id is not None and id in recipe_ids:
                 warn(f"{file} has duplicated recipe ID {id}.")
-            recipe_ids.add(id)
+                recipe_ids.add(id)
         except Exception as e:
-            print(e)
-            print(f"File {file} has invalid JSON.")
+            print(f"File {file} failed to parse as JSON.")
 
 if __name__ == "__main__":
     # Shared checks for both packs
