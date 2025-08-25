@@ -217,7 +217,7 @@ def find_duplicated_recipe_ids():
             elif "minecraft:recipe_shapeless" in data:
                 id = data["minecraft:recipe_shapeless"]["description"]["identifier"]
             elif "minecraft:recipe_furnace" in data:
-                id = data["minecraft:recipe_shapeless"]["description"]["identifier"]
+                id = data["minecraft:recipe_furnace"]["description"]["identifier"]
             else:
                 # keys starting with `minecraft:`
                 candidates = [k for k in data.keys() if k.startswith("minecraft:")]
