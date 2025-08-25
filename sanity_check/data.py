@@ -500,19 +500,20 @@ RP_FOLDERS = [
     "animation_controllers",
     "animations",
     "attachables",
+    "block_culling",
+    "biomes",
+    "cameras",
     "entity",
     "fogs",
-    "items",
+    "font",
     "materials",
     "models",
     "particles",
     "render_controllers",
     "sounds",
-    "textures",
     "texts",
-    "ui",
-    "font",
-    "cameras",
+    "textures",
+    "ui"
 ]
 
 RP_FILES = normalize_data(

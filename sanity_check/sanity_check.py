@@ -6,6 +6,7 @@ import data
 import config
 import utils
 import verbose_json
+import generated_data
 
 
 def warn(msg):
@@ -186,6 +187,8 @@ def find_missing_sounds():
     for key, defn in sound_defs.items():
         for sound in defn.get("sounds", []):
             name = sound.get("name") if isinstance(sound, dict) else sound
+            if name in generated_data.vanilla_sounds:
+                continue
             sound_file_ogg = os.path.join("RP", f"{name}.ogg")
             sound_file_wav = os.path.join("RP", f"{name}.wav")
             if not os.path.exists(sound_file_ogg) and not os.path.exists(sound_file_wav):
@@ -233,22 +236,42 @@ def find_duplicated_recipe_ids():
             print(f"File {file} failed to parse as JSON.")
 
 if __name__ == "__main__":
+    checks = getattr(config.config, "checks", None)
+
     # Shared checks for both packs
-    find_bom("BP")
-    find_bom("RP")
-    find_folder_misspellings("BP", data.BP_FOLDERS)
-    find_folder_misspellings("RP", data.RP_FOLDERS)
-    find_file_misspellings("BP", data.BP_FILES)
-    find_file_misspellings("RP", data.RP_FILES)
-    find_incorrect_language_names("BP")
-    find_incorrect_language_names("RP")
-    find_missing_translations("BP")
-    find_missing_translations("RP")
+    if not checks or checks.is_enabled("find_bom_bp"):
+        find_bom("BP")
+    if not checks or checks.is_enabled("find_bom_rp"):
+        find_bom("RP")
+
+    if not checks or checks.is_enabled("folder_misspellings_bp"):
+        find_folder_misspellings("BP", data.BP_FOLDERS)
+    if not checks or checks.is_enabled("folder_misspellings_rp"):
+        find_folder_misspellings("RP", data.RP_FOLDERS)
+
+    if not checks or checks.is_enabled("file_misspellings_bp"):
+        find_file_misspellings("BP", data.BP_FILES)
+    if not checks or checks.is_enabled("file_misspellings_rp"):
+        find_file_misspellings("RP", data.RP_FILES)
+
+    if not checks or checks.is_enabled("incorrect_language_names_bp"):
+        find_incorrect_language_names("BP")
+    if not checks or checks.is_enabled("incorrect_language_names_rp"):
+        find_incorrect_language_names("RP")
+
+    if not checks or checks.is_enabled("missing_translations_bp"):
+        find_missing_translations("BP")
+    if not checks or checks.is_enabled("missing_translations_rp"):
+        find_missing_translations("RP")
 
     # BP specific checks
-    find_incorrect_property_types()
-    find_duplicated_recipe_ids()
+    if not checks or checks.is_enabled("incorrect_property_types"):
+        find_incorrect_property_types()
+    if not checks or checks.is_enabled("duplicated_recipe_ids"):
+        find_duplicated_recipe_ids()
 
     # RP specific checks
-    find_unsupported_sound_files()
-    find_missing_sounds()
+    if not checks or checks.is_enabled("unsupported_sound_files"):
+        find_unsupported_sound_files()
+    if not checks or checks.is_enabled("missing_sounds"):
+        find_missing_sounds()

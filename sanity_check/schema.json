@@ -33,6 +33,87 @@
                     "description": "Whether to fix incorrect values for range and default in entity properties"
                 }
             }
+        ,
+        "checks": {
+            "type": "object",
+            "description": "Object to enable/disable individual sanity checks. `all_checks` can be used as a global override.",
+            "properties": {
+                "all_checks": {
+                    "type": "boolean",
+                    "description": "Global override for all checks; if present it will be applied to all toggles, but individual toggles may override it."
+                },
+                "find_bom_bp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/disable BOM (Byte Order Mark) detection/removal in the BP pack."
+                },
+                "find_bom_rp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/disable BOM (Byte Order Mark) detection/removal in the RP pack."
+                },
+                "folder_misspellings_bp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check for misspelled or unexpected folders inside the BP pack."
+                },
+                "folder_misspellings_rp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check for misspelled or unexpected folders inside the RP pack."
+                },
+                "file_misspellings_bp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check for misspelled or missing files referenced by the BP pack."
+                },
+                "file_misspellings_rp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check for misspelled or missing files referenced by the RP pack."
+                },
+                "incorrect_language_names_bp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Validate language file names (e.g. en_US.lang) in the BP pack."
+                },
+                "incorrect_language_names_rp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Validate language file names (e.g. en_US.lang) in the RP pack."
+                },
+                "missing_translations_bp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect missing translation keys across language files in the BP pack."
+                },
+                "missing_translations_rp": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect missing translation keys across language files in the RP pack."
+                },
+                "incorrect_property_types": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check and optionally fix incorrect property types in BP entity JSON files."
+                },
+                "duplicated_recipe_ids": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect duplicated recipe identifiers across BP recipe JSON files."
+                },
+                "unsupported_sound_files": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect sound files in RP/sounds with unsupported extensions."
+                },
+                "missing_sounds": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Detect sound definitions that reference missing sound files in the RP pack."
+                }
+            }
+        }
         }
     }
 }
