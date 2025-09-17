@@ -17,7 +17,7 @@ if (settings.updateVersionFromTag) {
     if (tagVersion) {
         const manifestPaths = ['RP/manifest.json', 'BP/manifest.json'];
         for (const manifestRelativePath of manifestPaths) {
-            updateManifestVersion(path.join(rootDir, manifestRelativePath), tagVersion);
+            updateManifestVersion(manifestRelativePath, tagVersion);
         }
     }
 }
