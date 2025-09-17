@@ -7,12 +7,23 @@ import { execSync } from 'child_process';
 import path from 'path';
 
 const settings = process.argv[2] ? JSON.parse(process.argv[2]) : {};
+const rootDir = process.env.ROOT_DIR || process.cwd();
 // variables for eval
-const config = JSON.parse(fs.readFileSync(process.env.ROOT_DIR + "/config.json", 'utf8'));
+const config = JSON.parse(fs.readFileSync(path.join(rootDir, 'config.json'), 'utf8'));
 const git = prepareGitInfo();
 
+if (settings.updateVersionFromTag) {
+    const tagVersion = extractVersionFromGitTag(git);
+    if (tagVersion) {
+        const manifestPaths = ['RP/manifest.json', 'BP/manifest.json'];
+        for (const manifestRelativePath of manifestPaths) {
+            updateManifestVersion(path.join(rootDir, manifestRelativePath), tagVersion);
+        }
+    }
+}
+
 const defaultName = "${config.name}.mcworld";
-const outputPath = process.env.ROOT_DIR + '/' + templateString(settings.output || defaultName);
+const outputPath = path.join(rootDir, templateString(settings.output || defaultName));
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 const output = createWriteStream(outputPath);
 const archive = archiver('zip');
@@ -131,6 +142,61 @@ function prepareGitInfo() {
         console.warn('Failed to get current branch');
     }
     return result;
+}
+
+function extractVersionFromGitTag(gitInfo) {
+    if (!gitInfo.tag) {
+        console.log('Skipping pack version update because no git tag was found.');
+        return null;
+    }
+    const version = parseTagVersion(gitInfo.tag);
+    if (!version) {
+        console.warn('Failed to parse a semantic version from git tag ' + gitInfo.tag + '.');
+        return null;
+    }
+    return version;
+}
+
+function parseTagVersion(tag) {
+    if (!tag) {
+        return null;
+    }
+    const match = tag.match(/\d+(?:\.\d+)*/);
+    if (!match) {
+        return null;
+    }
+    const segments = match[0].split('.').map(part => parseInt(part, 10)).filter(Number.isFinite);
+    if (segments.length === 0) {
+        return null;
+    }
+    while (segments.length < 3) {
+        segments.push(0);
+    }
+    return segments.slice(0, 3);
+}
+
+function updateManifestVersion(manifestPath, version) {
+    if (!fs.existsSync(manifestPath)) {
+        console.warn('Manifest not found at ' + manifestPath + ', skipping version update.');
+        return;
+    }
+    try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        if (manifest.header) {
+            manifest.header.version = [...version];
+        }
+        if (Array.isArray(manifest.dependencies)) {
+            for (const dependency of manifest.dependencies) {
+                if (dependency && typeof dependency === 'object' && typeof dependency.uuid === 'string') {
+                    dependency.version = [...version];
+                }
+            }
+        }
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 4) + '\n');
+        console.log('Updated manifest version in ' + manifestPath + ' to ' + version.join('.'));
+    } catch (error) {
+        console.warn('Failed to update manifest at ' + manifestPath + ': ' + error.message);
+    }
 }
 
 function templateString(str) {

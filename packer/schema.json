@@ -7,6 +7,10 @@
             "type": "string",
             "description": "Output file name. It uses JS template literal, so you can use `${config.name}` and other properties from Regolith config."
         },
+        "updateVersionFromTag": {
+            "type": "boolean",
+            "description": "When true, update pack manifest versions to match the current git tag when the current commit is tagged."
+        },
         "worldFolder": {
             "type": "string",
             "description": "The name of the world folder inside `minecraftWorlds` folder"
