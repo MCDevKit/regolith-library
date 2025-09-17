@@ -59,7 +59,7 @@ if (location) {
             const type = result.type;
             if (settings.worldVersion !== void 0) {
                 if (settings.worldVersion === 'release') {
-                    const response = await fetch('https://raw.githubusercontent.com/MCMrARM/mc-w10-versiondb/master/versions.json.min')
+                    const response = await fetch('https://raw.githubusercontent.com/ddf8196/mc-w10-versiondb-auto-update/refs/heads/master/versions.json.min')
                     const versions = (await response.json()).filter(v => v[2] === 0);
                     settings.worldVersion = versions[versions.length - 1][0].split('.').map(x => parseInt(x));
                 }
