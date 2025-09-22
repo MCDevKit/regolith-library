@@ -202,30 +202,32 @@ try {
 
     if ($hasPreviousRelease) {
         Write-Host ("Latest released version: {0}" -f $latestVersion)
+
+        Write-Host ""
+
+        $releaseOptions = @(
+            'Patch (x.y.Z -> x.y.(Z+1))',
+            'Minor (x.y.Z -> x.(y+1).0)'
+        )
+        $releaseIndex = Select-Option -Prompt 'Select release type' -Options $releaseOptions
+        $releaseChoice = if ($releaseIndex -eq 0) { 'Patch' } else { 'Minor' }
+        Write-Host "Release type: $releaseChoice"
+
+        switch ($releaseChoice) {
+            'Patch' {
+                $newVersion = New-Object System.Version -ArgumentList $latestVersion.Major, $latestVersion.Minor, ($latestVersion.Build + 1)
+            }
+            'Minor' {
+                $newVersion = New-Object System.Version -ArgumentList $latestVersion.Major, ($latestVersion.Minor + 1), 0
+            }
+        }
     }
     else {
-        Write-Host 'No previous releases found. Defaulting to 0.0.0.'
+        Write-Host 'No previous releases found. Proposing initial version 1.0.0.'
+        $newVersion = [Version]'1.0.0'
     }
 
     Write-Host ""
-
-    $releaseOptions = @(
-        'Patch (x.y.Z -> x.y.(Z+1))',
-        'Minor (x.y.Z -> x.(y+1).0)'
-    )
-    $releaseIndex = Select-Option -Prompt 'Select release type' -Options $releaseOptions
-    $releaseChoice = if ($releaseIndex -eq 0) { 'Patch' } else { 'Minor' }
-    Write-Host "Release type: $releaseChoice"
-
-    switch ($releaseChoice) {
-        'Patch' {
-            $newVersion = New-Object System.Version -ArgumentList $latestVersion.Major, $latestVersion.Minor, ($latestVersion.Build + 1)
-        }
-        'Minor' {
-            $newVersion = New-Object System.Version -ArgumentList $latestVersion.Major, ($latestVersion.Minor + 1), 0
-        }
-    }
-
     $newTag = "$filterName-$($newVersion.ToString())"
     Write-Host ""
     Write-Host ("Proposed tag: {0}" -f $newTag)
