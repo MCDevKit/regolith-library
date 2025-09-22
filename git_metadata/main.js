@@ -2,8 +2,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const rootDir = process.env.ROOT_DIR || process.cwd();
-const outputDir = path.join(rootDir, 'packs', 'data', 'git_metadata');
+const outputDir = path.join('data', 'git_metadata');
 const outputFile = path.join(outputDir, 'meta.json');
 
 function runGit(command) {
