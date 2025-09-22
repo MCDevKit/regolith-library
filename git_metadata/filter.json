@@ -1,0 +1,10 @@
+{
+    "description": "Captures git metadata for use in packs.",
+    "filters": [
+        {
+            "runWith": "nodejs",
+            "script": "./main.js",
+            "name": "git_metadata"
+        }
+    ]
+}

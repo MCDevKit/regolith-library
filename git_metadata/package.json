@@ -1,0 +1,6 @@
+{
+  "name": "git_metadata",
+  "version": "1.0.0",
+  "description": "Writes git metadata into packs/data/git_metadata/meta.json",
+  "type": "module"
+}
