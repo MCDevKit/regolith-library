@@ -14,7 +14,8 @@
                             "enum": [
                                 "error",
                                 "warning",
-                                "info"
+                                "info",
+                                "recommendation"
                             ]
                         },
                         {
@@ -37,15 +38,25 @@
     "properties": {
         "suite": {
             "type": "string",
-            "description": "The suite to run.",
+            "description": "The suite to run. 'default'/'main' run the in-development checks, 'addon' the add-on requirements, 'all' runs the default suite plus every derived suite (addon, sharing, currentplatform).",
             "default": "addon",
             "enum": [
                 "all",
                 "default",
+                "main",
                 "addon",
                 "currentplatform",
-                "main"
+                "sharing",
+                "sharingstrict"
             ]
+        },
+        "exclusions": {
+            "type": "array",
+            "description": "Validator ids to exclude from the run, e.g. [\"PATHLENGTH\", \"PACKSIZE\"].",
+            "default": [],
+            "items": {
+                "type": "string"
+            }
         },
         "failOnError": {
             "type": "boolean",
@@ -80,6 +91,11 @@
                     }
                 }
             }
+        },
+        "outputFolder": {
+            "type": "string",
+            "description": "Folder (relative to the pack root) where the HTML/CSV/JSON reports are written. Set to an empty string to skip report generation.",
+            "default": "./mct-output/"
         }
     }
 }

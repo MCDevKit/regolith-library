@@ -1,221 +1,257 @@
-import CartoApp, { HostType } from "@minecraft/creator-tools/app/CartoApp.js";
-
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-function defaultImport(mod) {
-  return mod && mod.default ? mod.default : mod;
-}
-const StorageUtilitiesModule = require("@minecraft/creator-tools/storage/StorageUtilities");
-const StorageUtilities = defaultImport(StorageUtilitiesModule);
-const LocalEnvironmentModule = require("@minecraft/creator-tools/local/LocalEnvironment");
-const LocalEnvironment = defaultImport(LocalEnvironmentModule);
-const ClUtilsModule = require("@minecraft/creator-tools/cli/ClUtils.js");
-const ClUtils = defaultImport(ClUtilsModule);
-const { OutputType, TaskType } = ClUtilsModule;
-const { InfoItemType } = require("@minecraft/creator-tools/info/IInfoItemData.js");
 import { exec } from "child_process";
-import fs from 'fs';
-let executeTask;
-try {
-  // Let's reuse the expose function to get the executeTask function.
-  require("threads/worker").expose = (fn) => {
-    executeTask = fn;
-  };
-} catch (e) {
-  // ignore if this fails
-}
-require("@minecraft/creator-tools/cli/TaskWorker.js");
+import fs from "fs";
+import path from "path";
+
+// @minecraft/creator-tools ships its library as CommonJS under lib/, so we
+// pull the pieces we need via require() and unwrap the default exports.
+const require = createRequire(import.meta.url);
+const lib = (mod) => {
+  const m = require("@minecraft/creator-tools/lib/" + mod);
+  return m && m.default ? m.default : m;
+};
+
+const ClUtils = lib("cli/ClUtils.js");
+const CreatorToolsHost = lib("app/CreatorToolsHost.js");
+const { HostType } = require("@minecraft/creator-tools/lib/app/CreatorToolsHost.js");
+const { TaskType } = require("@minecraft/creator-tools/lib/cli/ClUtils.js");
+const LocalEnvironment = lib("local/LocalEnvironment.js");
+const ImageCodecNode = lib("local/ImageCodecNode.js");
+const StorageUtilities = lib("storage/StorageUtilities.js");
+const ProjectInfoSet = lib("info/ProjectInfoSet.js");
+const { ResourceConsumptionConstraint } = require("@minecraft/creator-tools/lib/info/ProjectInfoSet.js");
+const ProjectInfoUtilities = lib("info/ProjectInfoUtilities.js");
+const { InfoItemType } = require("@minecraft/creator-tools/lib/info/IInfoItemData.js");
 
 const AnnoyanceNone = "none";
 const AnnoyanceAlert = "alert";
 
 const LevelMap = {
-  "error": InfoItemType.error,
-  "warning": InfoItemType.warning,
-  "info": InfoItemType.info,
-}
+  error: InfoItemType.error,
+  warning: InfoItemType.warning,
+  info: InfoItemType.info,
+  recommendation: InfoItemType.recommendation,
+};
 
 const FieldMap = {
-  "level": "iTp",
-  "error": "gId",
-  "id": "gIx",
+  level: "iTp",
+  error: "gId",
+  id: "gIx",
   // All other fields are the same.
-}
+};
 
 const defaultSettings = {
   suite: "addon",
+  exclusions: [],
   annoyance: AnnoyanceNone,
   failOnError: false,
   logOverrides: [],
+  outputFolder: "./mct-output/",
 };
-const settings = Object.assign(
-  {},
-  defaultSettings,
-  (JSON.parse(process.argv[2] || "{}") || {}),
-);
+const settings = Object.assign({}, defaultSettings, JSON.parse(process.argv[2] || "{}") || {});
 
 function windowsAlert(message, title = "Alert") {
-  // Check if the OS is Windows
   if (process.platform !== "win32") {
     return;
   }
+  const escape = (s) => String(s).replace(/'/g, "''");
   const psCommand =
     `[void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms');` +
-    `[System.Windows.Forms.MessageBox]::Show('${message}', '${title}')`;
-  exec(
-    `powershell -NoProfile -Command "${psCommand}"`,
-    (err, stdout, stderr) => {
-      if (err) console.error(err);
-    }
-  );
+    `[System.Windows.Forms.MessageBox]::Show('${escape(message)}', '${escape(title)}')`;
+  exec(`powershell -NoProfile -Command "${psCommand}"`, (err) => {
+    if (err) console.error(err);
+  });
 }
 
-CartoApp.hostType = HostType.toolsNodejs;
+function toLevel(value) {
+  return typeof value === "string" ? LevelMap[value] : value;
+}
 
-let carto;
-let mainProject;
-let localEnv;
-let suite = settings.suite;
-let exclusionList;
-let outputType;
-
-let executionTaskType = TaskType.noCommand;
-
-let inputFolder = "./";
-let outputFolder = "./mct-output/";
-
-// Clean output folder
-fs.rmSync(outputFolder, { recursive: true, force: true });
-
-localEnv = new LocalEnvironment(true);
-
-(async () => {
-  carto = ClUtils.getCarto(localEnv);
-
-  if (!carto) {
-    return;
+function applyLogOverrides(items) {
+  for (const { match, override } of settings.logOverrides || []) {
+    if (!match || !override) continue;
+    for (const item of items) {
+      let matched = true;
+      for (const [key, val] of Object.entries(match)) {
+        const field = FieldMap[key] || key;
+        const expected = key === "level" ? toLevel(val) : val;
+        if (item[field] !== expected) {
+          matched = false;
+          break;
+        }
+      }
+      if (!matched) continue;
+      for (const [key, val] of Object.entries(override)) {
+        const field = FieldMap[key] || key;
+        item[field] = key === "level" ? toLevel(val) : val;
+      }
+    }
   }
+}
 
-  await carto.load();
+function writeReports(outputFolder, baseName, pis, pisData, suffix) {
+  fs.mkdirSync(outputFolder, { recursive: true });
+  const base = path.join(outputFolder, StorageUtilities.ensureFileNameIsSafe(baseName) + suffix);
+  fs.writeFileSync(base + ".report.html", pis.getReportHtml(baseName, undefined, undefined));
+  fs.writeFileSync(base + ".csv", ProjectInfoSet.CommonCsvHeader + "\n" + pis.getItemCsvLines().join("\n"));
+  const data = Object.assign({}, pisData, { index: undefined });
+  fs.writeFileSync(base + ".mcr.json", JSON.stringify(data, null, 2));
+}
 
-  carto.onStatusAdded.subscribe(ClUtils.handleStatusAdded);
-
-  await loadProjects();
-
-  await validate();
-})();
-
-async function loadProjects() {
-  if (!carto || !carto.ensureLocalFolder) {
-    throw new Error("Not properly configured.");
-  }
-
-  const additionalFiles = [];
-
-  const workFolder = await ClUtils.getMainWorkFolder(
-    executionTaskType,
-    inputFolder,
-    outputFolder
-  );
-
-  const name = StorageUtilities.getLeafName(workFolder.fullPath);
-
-  // just assume this folder is a big single project then.
-  mainProject = {
-    ctorProjectName: name,
-    accessoryFiles: additionalFiles.slice(),
-    localFolderPath: workFolder.fullPath,
+function metaState(project, pis, suite) {
+  return {
+    projectContainerName: project.containerName,
+    projectPath: project.projectFolder?.storageRelativePath,
+    projectName: project.name,
+    projectTitle: project.title,
+    infoSetData: pis.getDataObject(),
+    suite: suite,
   };
 }
 
-async function validate() {
-  if (!carto || !localEnv) {
-    return;
+async function runValidation() {
+  const inputFolder = process.cwd();
+  const outputFolder = settings.outputFolder ? path.resolve(inputFolder, settings.outputFolder) : undefined;
+
+  if (outputFolder) {
+    fs.rmSync(outputFolder, { recursive: true, force: true });
   }
 
-  const result = await executeTask({
-    task: TaskType.validate,
-    project: mainProject,
-    arguments: {
-      suite: suite,
-      exclusionList: exclusionList,
-      outputMci: outputType === OutputType.noReports ? true : false,
-      outputType: outputType,
-    },
-    outputFolder: outputFolder,
-    inputFolder: inputFolder,
-    displayInfo: localEnv.displayInfo,
-    displayVerbose: localEnv.displayVerbose,
+  const localEnv = new LocalEnvironment(true);
+
+  CreatorToolsHost.hostType = HostType.toolsNodejs;
+  CreatorToolsHost.decodePng = ImageCodecNode.decodePng;
+  CreatorToolsHost.encodeToPng = ImageCodecNode.encodeToPng;
+
+  // The library resolves bundled data (res/, data/) relative to its own
+  // location, which only works for the bundled CLI. Point it at the package
+  // root explicitly so schemas and forms load from disk.
+  const packageRoot = path.dirname(require.resolve("@minecraft/creator-tools/package.json"));
+  const creatorTools = ClUtils.getCreatorTools(localEnv, packageRoot);
+  if (!creatorTools) {
+    throw new Error("Could not initialize Minecraft Creator Tools.");
+  }
+
+  await creatorTools.load();
+  creatorTools.onStatusAdded.subscribe(ClUtils.handleStatusAdded);
+
+  const workFolder = await ClUtils.getMainWorkFolder(TaskType.validate, inputFolder, undefined);
+  const name = StorageUtilities.getLeafName(workFolder.fullPath);
+
+  const project = ClUtils.createProject(creatorTools, {
+    ctorProjectName: name,
+    localFolderPath: workFolder.fullPath,
+    accessoryFiles: [],
   });
-  if (result !== undefined) {
-    // Apply log overrides based on settings.logOverrides
-    if (settings.logOverrides && settings.logOverrides.length) {
-      for (const ovr of settings.logOverrides) {
-        const { match, override: ov } = ovr;
-        for (const item of result[0].infoSetData.items) {
-          let matched = true;
-          for (const [key, val] of Object.entries(match)) {
-            const field = FieldMap[key] || key;
-            let itemVal = item[field];
-            let matchVal = val;
-            if (key === 'level') {
-              matchVal = typeof matchVal === 'string' ? LevelMap[matchVal] : matchVal;
-            }
-            if (itemVal !== matchVal) {
-              matched = false;
-              break;
-            }
-          }
-          if (!matched) continue;
-          for (const [key, val] of Object.entries(ov)) {
-            const field = FieldMap[key] || key;
-            let newVal = val;
-            if (key === 'level') {
-              newVal = typeof newVal === 'string' ? LevelMap[newVal] : newVal;
-            }
-            item[field] = newVal;
-          }
-        }
+  project.readOnlySafety = true;
+
+  await project.inferProjectItemsFromFiles();
+
+  const suiteName = String(settings.suite || "default");
+  const exclusions = Array.isArray(settings.exclusions)
+    ? settings.exclusions
+    : String(settings.exclusions || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+  const suite = ProjectInfoSet.getSuiteFromString(suiteName);
+  const pis = new ProjectInfoSet(
+    project,
+    suite,
+    exclusions.length ? exclusions : undefined,
+    undefined,
+    undefined,
+    undefined,
+    true
+  );
+  pis.constrainResourceConsumption = ResourceConsumptionConstraint.medium;
+
+  await pis.generateForProject();
+
+  const states = [metaState(project, pis, suite)];
+
+  if (outputFolder) {
+    writeReports(outputFolder, project.containerName, pis, states[0].infoSetData, "");
+  }
+
+  // "all" mirrors the CLI: run the default suite plus every derived suite
+  // (addon if the project is an add-on, sharing, and currentplatform).
+  if (suiteName.toLowerCase() === "all") {
+    const derived = await ProjectInfoUtilities.getDerivedStates(project, states[0].infoSetData);
+    states.push(...derived);
+  }
+
+  pis.disconnectFromProject();
+  project.dispose();
+
+  return states;
+}
+
+// Regolith's data/ folder is not part of the pack, so anything reported
+// against it (either by pack path or by absolute path) is noise.
+const dataFolderPrefix = path.join(process.cwd(), "data") + path.sep;
+function isRegolithDataItem(item) {
+  if (item.p && item.p.startsWith("/data/")) return true;
+  if (typeof item.d === "string" && item.d.startsWith(dataFolderPrefix)) return true;
+  return false;
+}
+
+function report(states) {
+  let hasErrors = false;
+  const groupedErrors = new Map();
+
+  for (const state of states) {
+    const data = state.infoSetData;
+    const items = data.items || [];
+
+    applyLogOverrides(items);
+
+    for (const item of items) {
+      // testCompleteFail items are just per-test summaries ("Found N errors in
+      // X check"), the actual errors are listed separately, so skip them.
+      const isError = item.iTp === InfoItemType.error || item.iTp === InfoItemType.internalProcessingError;
+      if (!isError) continue;
+      if (isRegolithDataItem(item)) continue;
+
+      const key = ProjectInfoSet.getEffectiveMessageFromData(data, item) || item.gId + ":" + item.gIx;
+      let arr = groupedErrors.get(key);
+      if (!arr) {
+        arr = [];
+        groupedErrors.set(key, arr);
       }
-    }
-    let hasErrors = false;
-    const groupedErrors = new Map();
-    result[0].infoSetData.items
-      .filter(
-        (item) =>
-          item.iTp === InfoItemType.error &&
-          (!item.p || !item.p.startsWith("/data/"))
-      )
-      .forEach((x) => {
-        const key =
-          result[0].infoSetData.info.summary[x.gId][x.gIx].defaultMessage;
-        let arr = groupedErrors.get(key);
-        if (!arr) {
-          arr = [];
-          groupedErrors.set(key, arr);
-        }
-        if (x.p) {
-          if (x.d) {
-            arr.push(x.p + " (" + x.d + ")");
-          } else {
-            arr.push(x.p);
-          }
-        } else if (x.d) {
-          arr.push(x.d);
-        }
-        hasErrors = true;
-      });
-    for (const [key, value] of groupedErrors) {
-      console.error(key + ":");
-      for (const item of value) {
-        console.error("\t" + item);
-        if (settings.annoyance === AnnoyanceAlert) {
-          windowsAlert(key + ": " + item, key);
-        }
+      if (item.p) {
+        arr.push(item.d !== undefined ? item.p + " (" + item.d + ")" : item.p);
+      } else if (item.d !== undefined) {
+        arr.push(String(item.d));
       }
-    }
-    if (hasErrors && settings.failOnError) {
-      process.exit(1);
+      hasErrors = true;
     }
   }
+
+  for (const [key, value] of groupedErrors) {
+    console.error(key + ":");
+    for (const item of value) {
+      console.error("\t" + item);
+      if (settings.annoyance === AnnoyanceAlert) {
+        windowsAlert(key + ": " + item, key);
+      }
+    }
+  }
+
+  return hasErrors;
 }
+
+(async () => {
+  let hasErrors = false;
+  try {
+    const states = await runValidation();
+    hasErrors = report(states);
+  } catch (e) {
+    console.error(e && e.stack ? e.stack : String(e));
+    process.exit(1);
+  }
+  if (hasErrors && settings.failOnError) {
+    process.exit(1);
+  }
+})();
